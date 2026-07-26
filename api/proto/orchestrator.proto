@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package orchestrator.v1;
+
+option go_package = "minikube-orchestrator/internal/grpcpb;grpcpb";
+
+message ResourceRequest {
+  int64 milli_cpu = 1;
+  int64 memory_mb = 2;
+}
+
+message Toleration {
+  string key = 1;
+  string value = 2;
+  string effect = 3;
+  string operator = 4;
+}
+
+message DeploymentSpec {
+  string name = 1;
+  string image = 2;
+  string image_pull_secret = 8;
+  int32 replicas = 3;
+  ResourceRequest resources = 4;
+  map<string, string> labels = 5;
+  repeated Toleration tolerations = 6;
+  int32 priority = 7;
+}
+
+message Deployment {
+  string id = 1;
+  DeploymentSpec spec = 2;
+  string status = 3;
+}
+
+message CreateDeploymentRequest {
+  DeploymentSpec spec = 1;
+}
+
+message CreateDeploymentResponse {
+  Deployment deployment = 1;
+}
+
+message DeleteDeploymentRequest {
+  string id = 1;
+}
+
+message DeleteDeploymentResponse {
+  bool ok = 1;
+}
+
+message ListDeploymentsRequest {}
+
+message ListDeploymentsResponse {
+  repeated Deployment deployments = 1;
+}
+
+message ClusterNode {
+  string id = 1;
+  string status = 2;
+  int64 allocatable_milli_cpu = 3;
+  int64 allocatable_memory_mb = 4;
+  int64 used_milli_cpu = 5;
+  int64 used_memory_mb = 6;
+}
+
+message ClusterStateRequest {}
+
+message ClusterStateResponse {
+  repeated ClusterNode nodes = 1;
+}
+
+service OrchestratorService {
+  rpc CreateDeployment(CreateDeploymentRequest) returns (CreateDeploymentResponse);
+  rpc DeleteDeployment(DeleteDeploymentRequest) returns (DeleteDeploymentResponse);
+  rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse);
+  rpc GetClusterState(ClusterStateRequest) returns (ClusterStateResponse);
+}
