@@ -1,0 +1,47 @@
+groups:
+  - name: orchestrator-slo
+    rules:
+      - alert: ControlPlaneDown
+        expr: up{job="orchestrator-control-plane"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Control plane is down"
+          description: "The API server scrape target has been down for more than 1 minute."
+
+      - alert: NodeAvailabilityBelowSLO
+        expr: (orch_nodes_ready / clamp_min(orch_nodes_total, 1)) < 0.99
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node availability below 99% SLO"
+          description: "Ready nodes ratio has been below 99% for 5 minutes."
+
+      - alert: WorkloadFailuresPresent
+        expr: orch_workloads_failed > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Failed workloads detected"
+          description: "One or more workloads are in failed state."
+
+      - alert: HighPendingWorkloads
+        expr: orch_workloads_pending > 20
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pending workloads backlog is high"
+          description: "More than 20 workloads are pending for over 3 minutes."
+
+      - alert: AutoscalerPolicyMissing
+        expr: orch_autoscaler_policies_total < 1
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "No autoscaler policy configured"
+          description: "Autoscaler policy count is zero; workloads may not scale automatically."

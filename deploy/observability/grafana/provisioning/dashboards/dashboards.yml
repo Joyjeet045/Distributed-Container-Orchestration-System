@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Orchestrator Dashboards
+    orgId: 1
+    folder: Mini Kubernetes
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

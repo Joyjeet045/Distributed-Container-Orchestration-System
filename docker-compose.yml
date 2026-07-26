@@ -1,0 +1,77 @@
+services:
+  api-server:
+    build:
+      context: .
+      dockerfile: deploy/docker/apiserver.Dockerfile
+    environment:
+      ORCH_HTTP_ADDR: ":8080"
+      ORCH_GRPC_ADDR: ":9090"
+      ORCH_DB_PATH: "/data/badger"
+      ORCH_API_TOKEN: "dev-token"
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    volumes:
+      - orchestrator_data:/data
+
+  worker-1:
+    build:
+      context: .
+      dockerfile: deploy/docker/worker.Dockerfile
+    environment:
+      ORCH_WORKER_ID: "worker-1"
+      ORCH_SERVER_URL: "http://api-server:8080"
+      ORCH_NODE_LABELS: "zone=a,rack=1"
+      ORCH_HEARTBEAT_SECONDS: "5"
+      ORCH_AGENT_TOKEN: "dev-token"
+      ORCH_WORKER_METRICS_ADDR: ":8081"
+    depends_on:
+      - api-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  worker-2:
+    build:
+      context: .
+      dockerfile: deploy/docker/worker.Dockerfile
+    environment:
+      ORCH_WORKER_ID: "worker-2"
+      ORCH_SERVER_URL: "http://api-server:8080"
+      ORCH_NODE_LABELS: "zone=b,rack=2"
+      ORCH_HEARTBEAT_SECONDS: "5"
+      ORCH_AGENT_TOKEN: "dev-token"
+      ORCH_WORKER_METRICS_ADDR: ":8081"
+    depends_on:
+      - api-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./deploy/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports:
+      - "9091:9090"
+    depends_on:
+      - api-server
+      - worker-1
+      - worker-2
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    volumes:
+      - ./deploy/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  orchestrator_data:

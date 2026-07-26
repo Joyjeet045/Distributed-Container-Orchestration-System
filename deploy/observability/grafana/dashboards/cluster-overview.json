@@ -1,0 +1,78 @@
+{
+  "id": null,
+  "uid": "mini-k8s-overview",
+  "title": "Mini Kubernetes - Cluster Overview",
+  "tags": ["orchestrator", "cluster"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Topology: Nodes",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "orch_nodes_total", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Topology: Deployments",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "orch_deployments_total", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Topology: Running Workloads",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "orch_workloads_running", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Health Status / Heartbeat (Ready Nodes)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [{ "expr": "orch_nodes_ready", "refId": "A" }]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Resource Utilization (Worker CPU Millicores)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [{ "expr": "sum(worker_used_millicpu)", "refId": "A" }]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Resource Utilization (Worker Memory MB)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "targets": [{ "expr": "sum(worker_used_memory_mb)", "refId": "A" }]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Failed Workloads and Restarts",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "targets": [{ "expr": "orch_workloads_failed", "refId": "A" }]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Replica Count and Scaling Events",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+      "targets": [
+        { "expr": "orch_workloads_running", "refId": "A" },
+        { "expr": "changes(orch_workloads_running[5m])", "refId": "B", "legendFormat": "scale-changes" }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Scheduler Decision / Placement Timeline (Proxy)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+      "targets": [{ "expr": "orch_workloads_pending", "refId": "A", "legendFormat": "pending-as-placement-pressure" }]
+    }
+  ]
+}
